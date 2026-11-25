@@ -15,6 +15,7 @@ const PublicLegalLayout = lazy(() =>
 const PrivacyPolicyPage = lazy(() => import("@/pages/legal/PrivacyPolicyPage"))
 const TermsConditionsPage = lazy(() => import("@/pages/legal/TermsConditionsPage"))
 const RefundPolicyPage = lazy(() => import("@/pages/legal/RefundPolicyPage"))
+const ShippingPolicyPage = lazy(() => import("@/pages/legal/ShippingPolicyPage"))
 const ContactUsPage = lazy(() => import("@/pages/legal/ContactUsPage"))
 
 const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"))
@@ -126,6 +127,10 @@ export default function App() {
             <Route path="/refund-and-cancellation-policy" element={<Navigate to="/refund-policy" replace />} />
             <Route path="/cancellation-policy" element={<Navigate to="/refund-policy" replace />} />
             <Route path="/refund" element={<Navigate to="/refund-policy" replace />} />
+
+            <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+            <Route path="/shipping" element={<Navigate to="/shipping-policy" replace />} />
+            <Route path="/delivery-policy" element={<Navigate to="/shipping-policy" replace />} />
 
             <Route path="/contact-us" element={<ContactUsPage />} />
             <Route path="/contact" element={<Navigate to="/contact-us" replace />} />

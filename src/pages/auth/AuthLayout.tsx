@@ -1,5 +1,7 @@
-import { Outlet } from "react-router-dom"
+import { Link, Outlet } from "react-router-dom"
 import { LotusIcon } from "@/components/LotusIcon"
+import { ShieldCheck, Lock } from "lucide-react"
+import { COMPANY_CONFIG } from "@/config/company"
 
 export default function AuthLayout() {
   return (
@@ -66,10 +68,33 @@ export default function AuthLayout() {
           </div>
         </div>
 
-        {/* Bottom subtle copyright note */}
-        <div className="relative z-10 flex items-center justify-between text-[11px] text-[#4A3828]/80 font-medium">
-          <p>© {new Date().getFullYear()} JSSG Jain Community</p>
-          <p>Federation Portal</p>
+        {/* Bottom subtle copyright note & compliance links */}
+        <div className="relative z-10 pt-4 border-t border-[#8C6D46]/25 space-y-2">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-[#4A3828]/90 font-medium">
+            <Link to="/privacy-policy" className="hover:text-[#2B1E16] hover:underline">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link to="/terms-and-conditions" className="hover:text-[#2B1E16] hover:underline">
+              Terms &amp; Conditions
+            </Link>
+            <span>•</span>
+            <Link to="/refund-policy" className="hover:text-[#2B1E16] hover:underline">
+              Refund Policy
+            </Link>
+            <span>•</span>
+            <Link to="/shipping-policy" className="hover:text-[#2B1E16] hover:underline">
+              Shipping Policy
+            </Link>
+            <span>•</span>
+            <Link to="/contact-us" className="hover:text-[#2B1E16] hover:underline">
+              Contact Us
+            </Link>
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-[#4A3828]/80 font-medium">
+            <p>© {new Date().getFullYear()} {COMPANY_CONFIG.name}</p>
+            <p>Federation Portal</p>
+          </div>
         </div>
       </aside>
 
@@ -90,7 +115,7 @@ export default function AuthLayout() {
       {/* =========================================================================
           RIGHT PANE: 45% Width, 100vh Height (Login Card + Watermark)
          ========================================================================= */}
-      <main className="relative flex-1 lg:h-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-[#FAF8F5] overflow-y-auto">
+      <main className="relative flex-1 min-h-screen lg:h-full flex flex-col justify-between p-4 sm:p-6 lg:p-8 bg-[#FAF8F5] overflow-y-auto">
         {/* Right side Ahimsa Hand Watermark (Using user's Login_backgorund_Hand.png) */}
         <div className="pointer-events-none absolute inset-y-0 right-0 w-[240px] sm:w-[320px] xl:w-[400px] hidden md:flex items-center justify-end pr-2 select-none opacity-85">
           <img
@@ -100,10 +125,68 @@ export default function AuthLayout() {
           />
         </div>
 
+        {/* Top subtle compliance badge */}
+        <div className="relative z-10 w-full flex items-center justify-between text-xs text-[#6E553F] shrink-0">
+          <div className="flex items-center gap-1.5 text-[11px] text-[#2B1E16] font-medium">
+            <span className="inline-flex size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Official Compliance Portal</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-[#8C6D46]">
+            <Lock className="size-3 text-emerald-600" />
+            <span className="hidden sm:inline">256-Bit SSL Secured</span>
+          </div>
+        </div>
+
         {/* The Login Card container */}
-        <div className="relative z-10 w-full max-w-[370px] sm:max-w-[390px] my-auto ml-0 mr-auto">
+        <div className="relative z-10 w-full max-w-[380px] sm:max-w-[400px] my-auto ml-0 mr-auto py-4">
           <Outlet />
         </div>
+
+        {/* Bottom compliance footer (accessible without login) */}
+        <footer className="relative z-10 w-full pt-4 mt-auto border-t border-[#E8DFD1]/80 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[11px] text-[#6E553F]">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2.5 gap-y-1">
+              <Link
+                to="/privacy-policy"
+                className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <span className="text-[#D0C5B4]">•</span>
+              <Link
+                to="/terms-and-conditions"
+                className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+              >
+                Terms &amp; Conditions
+              </Link>
+              <span className="text-[#D0C5B4]">•</span>
+              <Link
+                to="/refund-policy"
+                className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+              >
+                Refund Policy
+              </Link>
+              <span className="text-[#D0C5B4]">•</span>
+              <Link
+                to="/shipping-policy"
+                className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+              >
+                Shipping Policy
+              </Link>
+              <span className="text-[#D0C5B4]">•</span>
+              <Link
+                to="/contact-us"
+                className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+              >
+                Contact Us
+              </Link>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] text-[#8C7C6D] shrink-0">
+              <ShieldCheck className="size-3.5 text-emerald-600" />
+              <span>Secured by <strong>Razorpay</strong></span>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   )

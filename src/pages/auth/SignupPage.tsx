@@ -256,10 +256,22 @@ export default function SignupPage() {
           </FormField>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-4 pt-0">
+        <CardFooter className="flex flex-col gap-3 pt-0">
           <Button type="submit" size="lg" className="w-full bg-[#3D2B1F] hover:bg-[#2B1E16] text-white" disabled={loading}>
             {loading ? t("Creating account...") : t("Sign up")}
           </Button>
+
+          <p className="text-[11px] text-center text-muted-foreground px-2">
+            By signing up, you agree to our{" "}
+            <Link to="/terms-and-conditions" className="text-[#8C6D46] underline hover:text-[#3D2B1F]">
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy-policy" className="text-[#8C6D46] underline hover:text-[#3D2B1F]">
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           <p className="text-center text-sm text-muted-foreground">
             {t("Already have an account?")}{" "}

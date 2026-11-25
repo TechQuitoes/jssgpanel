@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react"
+import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -215,6 +215,50 @@ export default function LoginPage() {
           <span className="h-px w-10 bg-[#C5A059]/40" />
           <LotusIcon className="size-4 text-[#C5A059]" />
           <span className="h-px w-10 bg-[#C5A059]/40" />
+        </div>
+
+        {/* Razorpay Compliance & Policy Links (Publicly accessible without login) */}
+        <div className="pt-3 border-t border-[#EFE8DC]/80 text-center space-y-1.5">
+          <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#8C6D46]">
+            <ShieldCheck className="size-3.5 text-emerald-600" />
+            <span>Compliance &amp; Policy Pages</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-[#6E553F]">
+            <Link
+              to="/privacy-policy"
+              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+            >
+              {t("Privacy Policy")}
+            </Link>
+            <span className="text-[#D0C5B4]">•</span>
+            <Link
+              to="/terms-and-conditions"
+              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+            >
+              {t("Terms & Conditions")}
+            </Link>
+            <span className="text-[#D0C5B4]">•</span>
+            <Link
+              to="/refund-policy"
+              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+            >
+              {t("Refund Policy")}
+            </Link>
+            <span className="text-[#D0C5B4]">•</span>
+            <Link
+              to="/shipping-policy"
+              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+            >
+              {t("Shipping Policy")}
+            </Link>
+            <span className="text-[#D0C5B4]">•</span>
+            <Link
+              to="/contact-us"
+              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
+            >
+              {t("Contact Us")}
+            </Link>
+          </div>
         </div>
       </form>
     </div>

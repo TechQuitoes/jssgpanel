@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { label: "Privacy Policy", path: "/privacy-policy" },
   { label: "Terms & Conditions", path: "/terms-and-conditions" },
   { label: "Refund & Cancellation", path: "/refund-policy" },
+  { label: "Shipping Policy", path: "/shipping-policy" },
   { label: "Contact Us", path: "/contact-us" },
 ]
 
@@ -167,15 +168,6 @@ export function PublicLegalLayout() {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <Link
-                    to="/refund-policy#shipping"
-                    className="text-[#ded5bf] hover:text-white transition-colors inline-flex items-center gap-1.5"
-                  >
-                    <span className="size-1 rounded-full bg-[#c5a84e]" />
-                    Shipping &amp; Delivery Policy
-                  </Link>
-                </li>
               </ul>
             </div>
 
