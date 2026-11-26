@@ -1,10 +1,9 @@
 import { useState } from "react"
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { ChevronDown, LogOut, Menu, Search, Settings } from "lucide-react"
+import { ChevronDown, LogOut, Menu, Settings } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,16 +180,6 @@ export function AdminLayout() {
                 <SidebarFooter />
               </SheetContent>
             </Sheet>
-
-            {/* Global Search Bar (matches screenshot) */}
-            <div className="relative hidden sm:flex items-center w-72 md:w-96">
-              <Input
-                type="search"
-                placeholder={t("Search members, events, or anything...")}
-                className="h-9 w-full rounded-lg border-[#E2D9CC] bg-[#FAF8F5] pl-3 pr-9 text-xs placeholder:text-[#9C8C7D] focus-visible:border-[#8C6D46] focus-visible:ring-1 focus-visible:ring-[#8C6D46]"
-              />
-              <Search className="absolute right-3 size-4 text-[#8C7A6B] pointer-events-none" />
-            </div>
 
             {/* Mobile title */}
             <div className="min-w-0 sm:hidden">
