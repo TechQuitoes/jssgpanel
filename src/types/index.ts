@@ -1128,6 +1128,8 @@ export interface PaymentListResult {
 
 export interface DashboardStats {
   totalMembers: number
+  totalGroups?: number
+  totalAdvertisements?: number
   activeGroups: number
   pendingRegistrations: number
   totalLocations: number
@@ -1136,7 +1138,28 @@ export interface DashboardStats {
   upcomingEvents: number
   activeAds: number
   newMembersThisMonth: number
+  totalPostHolders?: number
+  totalCities?: number
+  totalGuests?: number
 }
+
+export interface DashboardActivity {
+  id: string
+  title: string
+  detail: string
+  time: string
+  timestamp?: number
+  type: "member" | "event" | "ad" | "group"
+}
+
+export interface DashboardEventItem {
+  id: string
+  date: string
+  title: string
+  venue: string
+  status: string
+}
+
 
 export interface MemberGrowthPoint {
   month: string

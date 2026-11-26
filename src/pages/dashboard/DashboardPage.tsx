@@ -2,115 +2,108 @@ import { useCallback } from "react"
 import { Link } from "react-router-dom"
 import {
   ArrowRight,
+  Building2,
   Calendar,
   CalendarDays,
   CalendarPlus,
   FileText,
   Megaphone,
   User,
-  UserCheck,
   UserPlus,
   Users,
 } from "lucide-react"
 import { StatCard } from "@/components/StatCard"
 import {
   getDashboardStats,
-  getRecentRegistrations,
-  getUpcomingEvents,
+  getDashboardUpcomingEvents,
+  getRecentDashboardActivities,
 } from "@/services/api/dashboard"
 import { useData } from "@/lib/useData"
-import { formatDate } from "@/lib/format"
 import DashboardBanner from "@/components/DashboardBanner"
 import { LotusIcon } from "@/components/LotusIcon"
+import type { DashboardActivity } from "@/types"
 
-// Default mock events matching the screenshot
-const DEFAULT_EVENTS = [
-  {
-    id: "evt-1",
-    date: "05 Nov 2026",
-    title: "Paryushan Mahaparva",
-    venue: "Community Hall",
-    status: "Upcoming",
-  },
-  {
-    id: "evt-2",
-    date: "12 Nov 2026",
-    title: "Satsang Sabha",
-    venue: "Temple",
-    status: "Upcoming",
-  },
-  {
-    id: "evt-3",
-    date: "20 Nov 2026",
-    title: "Youth Connect",
-    venue: "Community Hall",
-    status: "Upcoming",
-  },
-  {
-    id: "evt-4",
-    date: "28 Nov 2026",
-    title: "Matri Bhoj",
-    venue: "Temple",
-    status: "Upcoming",
-  },
-]
-
-// Recent activities matching the screenshot
-const RECENT_ACTIVITIES = [
+// Fallback recent activities matching the 4 categories
+const DEFAULT_ACTIVITIES: DashboardActivity[] = [
   {
     id: "act-1",
     title: "New member registered",
     detail: "Rahul Shah",
     time: "2 hours ago",
-    icon: User,
-    iconBg: "bg-slate-100",
-    iconColor: "text-slate-700",
+    type: "member",
   },
   {
     id: "act-2",
     title: "Event created",
     detail: "Samayik Satsang",
     time: "4 hours ago",
-    icon: Calendar,
-    iconBg: "bg-rose-100",
-    iconColor: "text-rose-700",
+    type: "event",
   },
   {
     id: "act-3",
-    title: "Announcement published",
+    title: "Advertisement published",
     detail: "Paryushan Mahaparva Details",
     time: "6 hours ago",
-    icon: Megaphone,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-700",
+    type: "ad",
   },
   {
     id: "act-4",
-    title: "Member updated",
-    detail: "Meena Jain",
+    title: "New group added",
+    detail: "JSSG Surat Youth",
     time: "8 hours ago",
-    icon: UserCheck,
-    iconBg: "bg-emerald-100",
-    iconColor: "text-emerald-700",
+    type: "group",
   },
 ]
 
+const ACTIVITY_CONFIG: Record<
+  DashboardActivity["type"],
+  {
+    icon: typeof User
+    iconBg: string
+    iconColor: string
+    link: string
+  }
+> = {
+  member: {
+    icon: User,
+    iconBg: "bg-slate-100",
+    iconColor: "text-slate-700",
+    link: "/admin/members",
+  },
+  event: {
+    icon: Calendar,
+    iconBg: "bg-rose-100",
+    iconColor: "text-rose-700",
+    link: "/admin/events",
+  },
+  ad: {
+    icon: Megaphone,
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-700",
+    link: "/admin/advertisements",
+  },
+  group: {
+    icon: Building2,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-700",
+    link: "/admin/groups",
+  },
+}
+
 export default function DashboardPage() {
   const stats = useData(useCallback(() => getDashboardStats(), []))
-  const upcoming = useData(useCallback(() => getUpcomingEvents(), []))
-  const pending = useData(useCallback(() => getRecentRegistrations(), []))
+  const upcoming = useData(useCallback(() => getDashboardUpcomingEvents(), []))
+  const activities = useData(useCallback(() => getRecentDashboardActivities(), []))
 
-  // Dynamically map events or use the design mock events
-  const displayEvents =
-    upcoming.data && upcoming.data.length > 0
-      ? upcoming.data.slice(0, 4).map((e, idx) => ({
-          id: e.id || `evt-${idx}`,
-          date: formatDate(e.date),
-          title: e.title,
-          venue: e.city || "Community Hall",
-          status: "Upcoming",
-        }))
-      : DEFAULT_EVENTS
+  // Only display strictly verified upcoming events, no past events and no mock fallbacks
+  const displayEvents = upcoming.data || []
+
+  const displayActivities =
+    activities.data && activities.data.length > 0
+      ? activities.data
+      : activities.loading
+        ? []
+        : DEFAULT_ACTIVITIES
 
   return (
     <div className="space-y-6">
@@ -122,7 +115,13 @@ export default function DashboardPage() {
         <StatCard
           icon={Users}
           label="Total Members"
-          value={stats.data?.totalMembers ? stats.data.totalMembers.toLocaleString() : "1,248"}
+          value={
+            stats.data?.totalMembers !== undefined
+              ? stats.data.totalMembers.toLocaleString()
+              : stats.loading
+                ? "..."
+                : "0"
+          }
           trend="12%"
           trendLabel="vs. last month"
           iconBg="bg-amber-100/80"
@@ -131,35 +130,51 @@ export default function DashboardPage() {
         <StatCard
           icon={CalendarDays}
           label="Upcoming Events"
-          value={upcoming.data?.length ? String(upcoming.data.length) : "8"}
-          trend="33%"
+          value={
+            stats.data?.upcomingEvents !== undefined
+              ? String(stats.data.upcomingEvents)
+              : upcoming.data
+                ? String(upcoming.data.length)
+                : stats.loading
+                  ? "..."
+                  : "0"
+          }
+          trend={stats.data?.upcomingEvents ? "33%" : undefined}
           trendLabel="vs. last month"
           iconBg="bg-purple-100/80"
           iconColor="text-purple-700"
         />
         <StatCard
           icon={Megaphone}
-          label="Total Announcements"
-          value={stats.data?.activeGroups ? String(stats.data.activeGroups) : "15"}
+          label="Total Advertisements"
+          value={
+            stats.data?.totalAdvertisements !== undefined
+              ? String(stats.data.totalAdvertisements)
+              : stats.loading
+                ? "..."
+                : "0"
+          }
           trend="20%"
           trendLabel="vs. last month"
           iconBg="bg-emerald-100/80"
           iconColor="text-emerald-700"
         />
         <StatCard
-          icon={Users}
-          label="Active Volunteers"
+          icon={Building2}
+          label="Total Groups"
           value={
-            pending.data?.length
-              ? String(pending.data.length)
-              : stats.data?.pendingRegistrations
-                ? String(stats.data.pendingRegistrations)
-                : "52"
+            stats.data?.totalGroups !== undefined
+              ? String(stats.data.totalGroups)
+              : stats.data?.activeGroups !== undefined
+                ? String(stats.data.activeGroups)
+                : stats.loading
+                  ? "..."
+                  : "0"
           }
           trend="8%"
           trendLabel="vs. last month"
-          iconBg="bg-amber-100/80"
-          iconColor="text-amber-800"
+          iconBg="bg-blue-100/80"
+          iconColor="text-blue-700"
         />
       </section>
 
@@ -194,24 +209,49 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F6F1EA]">
-                    {displayEvents.map((evt) => (
-                      <tr key={evt.id} className="transition-colors hover:bg-[#FAF8F5]">
-                        <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
-                          {evt.date}
-                        </td>
-                        <td className="py-3.5 px-2 font-medium text-[#2B1E16] whitespace-nowrap">
-                          {evt.title}
-                        </td>
-                        <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
-                          {evt.venue}
-                        </td>
-                        <td className="py-3.5 px-2 text-right whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-full bg-[#E8F5E9] px-2.5 py-0.5 text-[11px] font-semibold text-[#2E7D32]">
-                            {evt.status}
-                          </span>
+                    {upcoming.loading ? (
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <tr key={i} className="animate-pulse">
+                          <td className="py-3.5 px-2">
+                            <div className="h-3 w-16 bg-slate-200 rounded" />
+                          </td>
+                          <td className="py-3.5 px-2">
+                            <div className="h-3 w-36 bg-slate-200 rounded" />
+                          </td>
+                          <td className="py-3.5 px-2">
+                            <div className="h-3 w-20 bg-slate-200 rounded" />
+                          </td>
+                          <td className="py-3.5 px-2 text-right">
+                            <div className="h-4 w-14 bg-slate-200 rounded-full ml-auto" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : displayEvents.length > 0 ? (
+                      displayEvents.map((evt) => (
+                        <tr key={evt.id} className="transition-colors hover:bg-[#FAF8F5]">
+                          <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
+                            {evt.date}
+                          </td>
+                          <td className="py-3.5 px-2 font-medium text-[#2B1E16] whitespace-nowrap">
+                            {evt.title}
+                          </td>
+                          <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
+                            {evt.venue}
+                          </td>
+                          <td className="py-3.5 px-2 text-right whitespace-nowrap">
+                            <span className="inline-flex items-center rounded-full bg-[#E8F5E9] px-2.5 py-0.5 text-[11px] font-semibold text-[#2E7D32]">
+                              {evt.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-10 text-center text-xs text-[#8C7A6B]">
+                          No upcoming events scheduled
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -236,29 +276,53 @@ export default function DashboardPage() {
             </div>
 
             <div className="divide-y divide-[#F6F1EA] pt-1">
-              {RECENT_ACTIVITIES.map((act) => {
-                const Icon = act.icon
-                return (
-                  <div key={act.id} className="flex items-center justify-between py-3 gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-full ${act.iconBg} ${act.iconColor}`}
-                      >
-                        <Icon className="size-4" />
-                      </div>
-                      <div className="min-w-0 leading-tight">
-                        <p className="truncate text-xs font-semibold text-[#2B1E16]">
-                          {act.title}
-                        </p>
-                        <p className="truncate text-[11px] text-[#7C6C5E]">{act.detail}</p>
+              {activities.loading && displayActivities.length === 0 ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between py-3 gap-3 animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-full bg-slate-200" />
+                      <div className="space-y-1.5">
+                        <div className="h-3 w-28 bg-slate-200 rounded" />
+                        <div className="h-2.5 w-20 bg-slate-100 rounded" />
                       </div>
                     </div>
-                    <span className="shrink-0 text-[11px] text-[#A09385] whitespace-nowrap">
-                      {act.time}
-                    </span>
+                    <div className="h-2.5 w-14 bg-slate-100 rounded" />
                   </div>
-                )
-              })}
+                ))
+              ) : displayActivities.length > 0 ? (
+                displayActivities.map((act) => {
+                  const config = ACTIVITY_CONFIG[act.type] || ACTIVITY_CONFIG.member
+                  const Icon = config.icon
+                  return (
+                    <Link
+                      key={act.id}
+                      to={config.link}
+                      className="flex items-center justify-between py-3 gap-3 transition-colors hover:bg-[#FAF8F5] -mx-2 px-2 rounded-lg block"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`flex size-8 shrink-0 items-center justify-center rounded-full ${config.iconBg} ${config.iconColor}`}
+                        >
+                          <Icon className="size-4" />
+                        </div>
+                        <div className="min-w-0 leading-tight">
+                          <p className="truncate text-xs font-semibold text-[#2B1E16]">
+                            {act.title}
+                          </p>
+                          <p className="truncate text-[11px] text-[#7C6C5E]">{act.detail}</p>
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-[11px] text-[#A09385] whitespace-nowrap">
+                        {act.time}
+                      </span>
+                    </Link>
+                  )
+                })
+              ) : (
+                <p className="py-4 text-center text-xs text-[#8C7A6B]">
+                  No recent activities
+                </p>
+              )}
             </div>
           </div>
 
@@ -292,7 +356,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-2.5 rounded-xl border border-[#E8DFD1] bg-[#FAF8F5] p-3 text-xs font-medium text-[#2B1E16] transition-all hover:bg-[#F2ECE0] hover:border-[#D0C2AE] shadow-2xs"
               >
                 <Megaphone className="size-4 text-[#8C6D46]" />
-                <span className="truncate">Post Announcement</span>
+                <span className="truncate">Post Advertisement</span>
               </Link>
 
               <Link
@@ -304,7 +368,7 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Bottom Footer inside Quick Links (matches screenshot) */}
+            {/* Bottom Footer inside Quick Links */}
             <div className="pt-4 flex items-center justify-center gap-1.5 text-xs text-[#A08B77] select-none">
               <LotusIcon className="size-3.5 text-[#C5A059]" />
               <span className="font-serif-display text-[11px] tracking-wide">Jai Jinendra</span>
