@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   allow_partial_payments: true,
   min_partial_amount: 100,
   payment_gateway: "Razorpay",
-  razorpay_key_id: "rzp_test_TzeUn0Iazq0yuq",
+  razorpay_key_id: "rzp_live_U5AQMru4LvFBW2",
   allowed_payment_methods: ["UPI", "Net Banking", "Debit/Credit Card"],
   apply_to_existing_obligations: true,
 }
