@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck } from "lucide-react"
+import { ArrowRight, Download, Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -217,47 +217,44 @@ export default function LoginPage() {
           <span className="h-px w-10 bg-[#C5A059]/40" />
         </div>
 
-        {/* Razorpay Compliance & Policy Links (Publicly accessible without login) */}
-        <div className="pt-3 border-t border-[#EFE8DC]/80 text-center space-y-1.5">
-          <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#8C6D46]">
-            <ShieldCheck className="size-3.5 text-emerald-600" />
-            <span>Compliance &amp; Policy Pages</span>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-[#6E553F]">
-            <Link
-              to="/privacy-policy"
-              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
-            >
-              {t("Privacy Policy")}
-            </Link>
-            <span className="text-[#D0C5B4]">•</span>
-            <Link
-              to="/terms-and-conditions"
-              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
-            >
-              {t("Terms & Conditions")}
-            </Link>
-            <span className="text-[#D0C5B4]">•</span>
-            <Link
-              to="/refund-policy"
-              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
-            >
-              {t("Refund Policy")}
-            </Link>
-            <span className="text-[#D0C5B4]">•</span>
-            <Link
-              to="/shipping-policy"
-              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
-            >
-              {t("Shipping Policy")}
-            </Link>
-            <span className="text-[#D0C5B4]">•</span>
-            <Link
-              to="/contact-us"
-              className="hover:text-[#2B1E16] hover:underline font-medium transition-colors"
-            >
-              {t("Contact Us")}
-            </Link>
+        {/* Download JSSG Community App Card */}
+        <div className="mt-3 rounded-2xl border border-[#EFE5D5] bg-[#FAF5EC]/90 p-3.5 sm:p-4 shadow-[0_2px_8px_rgba(43,30,22,0.03)]">
+          <div className="flex items-center gap-3.5">
+            {/* Phone Mockup Graphic */}
+            <div className="relative shrink-0 flex items-center justify-center w-[52px] h-[76px] rounded-[14px] border-2 border-[#5A1C29] bg-white shadow-xs">
+              {/* Speaker / Notch bar */}
+              <div className="absolute top-1 left-1/2 -translate-x-1/2 w-3.5 h-[2px] rounded-full bg-[#5A1C29]/30" />
+
+              {/* JSSG Ahimsa Hand Icon inside screen */}
+              <img
+                src="/hand_icon.png"
+                alt="JSSG App"
+                className="size-6 object-contain"
+              />
+
+              {/* Download Circle Badge at bottom right */}
+              <div className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#5A1C29] text-white shadow-sm ring-2 ring-[#FAF5EC]">
+                <Download className="size-2.5 stroke-[2.5]" />
+              </div>
+            </div>
+
+            {/* App Info & Download Button */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-[13px] font-bold text-[#5A1C29] leading-tight">
+                {t("Download JSSG Community App")}
+              </h3>
+              <p className="mt-0.5 text-[10px] sm:text-[11px] text-[#7C6C5E] leading-snug">
+                {t("Stay Connected. Anytime. Anywhere.")}
+              </p>
+              <a
+                href="/app-release.apk"
+                download="JSSG-Community.apk"
+                className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#5A1C29] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-[#43141E] active:scale-[0.98]"
+              >
+                <Download className="size-3.5 stroke-[2.5]" />
+                <span>{t("Download APK")}</span>
+              </a>
+            </div>
           </div>
         </div>
       </form>

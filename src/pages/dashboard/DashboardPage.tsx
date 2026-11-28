@@ -1,27 +1,38 @@
-import { useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { toast } from "sonner"
 import {
+  AlertCircle,
   ArrowRight,
   Building2,
   Calendar,
-  CalendarDays,
   CalendarPlus,
+  Check,
   FileText,
   Megaphone,
+  RefreshCw,
+  Trash2,
   User,
+  UserCheck,
   UserPlus,
   Users,
 } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ConfirmDialog"
+import { StatusBadge } from "@/components/StatusBadge"
 import { StatCard } from "@/components/StatCard"
 import {
   getDashboardStats,
-  getDashboardUpcomingEvents,
   getRecentDashboardActivities,
 } from "@/services/api/dashboard"
+import { approveGuest, deleteGuest, getGuests } from "@/services/api/guests"
 import { useData } from "@/lib/useData"
+import { getErrorMessage } from "@/lib/apiClient"
+import { initials } from "@/lib/format"
 import DashboardBanner from "@/components/DashboardBanner"
 import { LotusIcon } from "@/components/LotusIcon"
-import type { DashboardActivity } from "@/types"
+import type { DashboardActivity, GuestRecord } from "@/types"
 
 // Fallback recent activities matching the 4 categories
 const DEFAULT_ACTIVITIES: DashboardActivity[] = [
@@ -92,11 +103,69 @@ const ACTIVITY_CONFIG: Record<
 
 export default function DashboardPage() {
   const stats = useData(useCallback(() => getDashboardStats(), []))
-  const upcoming = useData(useCallback(() => getDashboardUpcomingEvents(), []))
   const activities = useData(useCallback(() => getRecentDashboardActivities(), []))
 
-  // Only display strictly verified upcoming events, no past events and no mock fallbacks
-  const displayEvents = upcoming.data || []
+  // Pending Guest Approvals State
+  const [pendingGuests, setPendingGuests] = useState<GuestRecord[]>([])
+  const [pendingCount, setPendingCount] = useState<number | null>(null)
+  const [guestLoading, setGuestLoading] = useState(true)
+  const [guestError, setGuestError] = useState<string | null>(null)
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [deletingGuest, setDeletingGuest] = useState<GuestRecord | null>(null)
+
+  const loadPendingGuests = useCallback(async () => {
+    setGuestLoading(true)
+    setGuestError(null)
+    try {
+      const res = await getGuests({ status: "PENDING", pageSize: 50 })
+      // Filter registered guests and display strictly those whose approval status is pending
+      const filtered = (res.guests || []).filter(
+        (g) => g.status?.toUpperCase() === "PENDING" || !g.is_active
+      )
+      setPendingGuests(filtered)
+      setPendingCount(res.total ?? filtered.length)
+    } catch (err) {
+      console.warn("Failed to load pending guests:", err)
+      setGuestError(getErrorMessage(err, "Failed to load pending guest approvals."))
+    } finally {
+      setGuestLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadPendingGuests()
+  }, [loadPendingGuests])
+
+  const handleApprove = async (guest: GuestRecord) => {
+    setActionLoadingId(guest.id)
+    try {
+      await approveGuest(guest.id, { status: "APPROVED" })
+      toast.success(`Guest "${guest.full_name}" approved successfully`)
+      await loadPendingGuests()
+      stats.reload()
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to approve guest."))
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deletingGuest) return
+    const target = deletingGuest
+    setActionLoadingId(target.id)
+    try {
+      await deleteGuest(target.id)
+      toast.success(`Guest "${target.full_name}" deleted successfully`)
+      await loadPendingGuests()
+      stats.reload()
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to delete guest."))
+    } finally {
+      setActionLoadingId(null)
+      setDeletingGuest(null)
+    }
+  }
 
   const displayActivities =
     activities.data && activities.data.length > 0
@@ -128,19 +197,15 @@ export default function DashboardPage() {
           iconColor="text-amber-800"
         />
         <StatCard
-          icon={CalendarDays}
-          label="Upcoming Events"
+          icon={UserCheck}
+          label="Pending Guests"
           value={
-            stats.data?.upcomingEvents !== undefined
-              ? String(stats.data.upcomingEvents)
-              : upcoming.data
-                ? String(upcoming.data.length)
-                : stats.loading
-                  ? "..."
-                  : "0"
+            guestLoading && pendingCount === null
+              ? "..."
+              : String(pendingCount ?? 0)
           }
-          trend={stats.data?.upcomingEvents ? "33%" : undefined}
-          trendLabel="vs. last month"
+          trend={pendingCount && pendingCount > 0 ? "Requires review" : undefined}
+          trendLabel={pendingCount && pendingCount > 0 ? "" : undefined}
           iconBg="bg-purple-100/80"
           iconColor="text-purple-700"
         />
@@ -178,77 +243,143 @@ export default function DashboardPage() {
         />
       </section>
 
-      {/* Main Grid: Left Column (Upcoming Events) + Right Column (Activities & Quick Links) */}
+      {/* Main Grid: Left Column (Pending Guest Approvals) + Right Column (Activities & Quick Links) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Column: Upcoming Events Table (approx 7 of 12 cols) */}
+        {/* Left Column: Pending Guest Approvals Table (7 of 12 cols) */}
         <div className="lg:col-span-7">
           <div className="rounded-2xl border border-[#E8DFD1] bg-white p-5 sm:p-6 shadow-[0_2px_10px_rgba(43,30,22,0.03)] h-full flex flex-col justify-between">
             <div>
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-[#F0EAE1]">
-                <h2 className="font-serif-display text-base font-bold tracking-tight text-[#2B1E16]">
-                  Upcoming Events
-                </h2>
-                <Link
-                  to="/admin/events"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#8C6D46] hover:text-[#3D2B1F] hover:underline"
+                <div className="flex items-center gap-2.5">
+                  <h2 className="font-serif-display text-base font-bold tracking-tight text-[#2B1E16]">
+                    Pending Guest Approvals
+                  </h2>
+                  {pendingCount !== null && pendingCount > 0 && (
+                    <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900 border border-amber-200">
+                      {pendingCount}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => loadPendingGuests()}
+                  disabled={guestLoading}
+                  title="Refresh pending guests"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#E8DFD1] bg-[#FAF8F5] px-2.5 py-1 text-xs font-semibold text-[#8C6D46] hover:bg-[#F2ECE0] hover:text-[#3D2B1F] disabled:opacity-50 transition-colors"
                 >
-                  View all <ArrowRight className="size-3.5" />
-                </Link>
+                  <RefreshCw className={`size-3.5 ${guestLoading ? "animate-spin" : ""}`} />
+                  <span>Refresh</span>
+                </button>
               </div>
+
+              {/* Error banner if guestError */}
+              {guestError && (
+                <div className="my-3 flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="size-4 shrink-0 text-rose-600" />
+                    <span>{guestError}</span>
+                  </div>
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="border-rose-300 text-rose-800 hover:bg-rose-100 shrink-0"
+                    onClick={() => loadPendingGuests()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
 
               {/* Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-[#F2ECE3] text-[11px] font-semibold text-[#8C7A6B] uppercase tracking-wider">
-                      <th className="py-3 px-2">Date</th>
-                      <th className="py-3 px-2">Event Name</th>
-                      <th className="py-3 px-2">Venue</th>
-                      <th className="py-3 px-2 text-right">Status</th>
+                      <th className="py-3 px-2">Guest Name</th>
+                      <th className="py-3 px-2">Mobile</th>
+                      <th className="py-3 px-2">Status</th>
+                      <th className="py-3 px-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F6F1EA]">
-                    {upcoming.loading ? (
+                    {guestLoading ? (
                       Array.from({ length: 4 }).map((_, i) => (
                         <tr key={i} className="animate-pulse">
                           <td className="py-3.5 px-2">
-                            <div className="h-3 w-16 bg-slate-200 rounded" />
+                            <div className="flex items-center gap-2.5">
+                              <div className="size-7 rounded-full bg-slate-200" />
+                              <div className="space-y-1.5">
+                                <div className="h-3 w-28 bg-slate-200 rounded" />
+                              </div>
+                            </div>
                           </td>
                           <td className="py-3.5 px-2">
-                            <div className="h-3 w-36 bg-slate-200 rounded" />
+                            <div className="h-3 w-24 bg-slate-200 rounded" />
                           </td>
                           <td className="py-3.5 px-2">
-                            <div className="h-3 w-20 bg-slate-200 rounded" />
+                            <div className="h-4 w-16 bg-slate-200 rounded-full" />
                           </td>
                           <td className="py-3.5 px-2 text-right">
-                            <div className="h-4 w-14 bg-slate-200 rounded-full ml-auto" />
+                            <div className="h-6 w-28 bg-slate-200 rounded ml-auto" />
                           </td>
                         </tr>
                       ))
-                    ) : displayEvents.length > 0 ? (
-                      displayEvents.map((evt) => (
-                        <tr key={evt.id} className="transition-colors hover:bg-[#FAF8F5]">
-                          <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
-                            {evt.date}
-                          </td>
-                          <td className="py-3.5 px-2 font-medium text-[#2B1E16] whitespace-nowrap">
-                            {evt.title}
-                          </td>
-                          <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap">
-                            {evt.venue}
-                          </td>
-                          <td className="py-3.5 px-2 text-right whitespace-nowrap">
-                            <span className="inline-flex items-center rounded-full bg-[#E8F5E9] px-2.5 py-0.5 text-[11px] font-semibold text-[#2E7D32]">
-                              {evt.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
+                    ) : pendingGuests.length > 0 ? (
+                      pendingGuests.map((guest) => {
+                        const isActionBusy = actionLoadingId === guest.id
+                        return (
+                          <tr key={guest.id} className="transition-colors hover:bg-[#FAF8F5]">
+                            <td className="py-3.5 px-2 font-medium text-[#2B1E16] whitespace-nowrap">
+                              <div className="flex items-center gap-2.5">
+                                <Avatar className="size-7 text-[11px] font-semibold bg-[#FAF6EE] text-[#8C6D46] border border-[#E8DFD1]">
+                                  <AvatarFallback>{initials(guest.full_name || "G")}</AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <p className="font-medium text-[#2B1E16] truncate">{guest.full_name}</p>
+                                  {guest.email && (
+                                    <p className="text-[11px] text-[#8C7A6B] truncate">{guest.email}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-2 text-[#7C6C5E] whitespace-nowrap font-mono text-xs">
+                              {guest.phone_number || "—"}
+                            </td>
+                            <td className="py-3.5 px-2 whitespace-nowrap">
+                              <StatusBadge status="pending" />
+                            </td>
+                            <td className="py-3.5 px-2 text-right whitespace-nowrap">
+                              <div className="inline-flex items-center gap-1.5 justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  disabled={isActionBusy}
+                                  onClick={() => handleApprove(guest)}
+                                  className="h-7 border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:text-emerald-900 cursor-pointer"
+                                >
+                                  <Check className="size-3 mr-1 text-emerald-700" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="xs"
+                                  disabled={isActionBusy}
+                                  onClick={() => setDeletingGuest(guest)}
+                                  className="h-7 text-rose-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                                >
+                                  <Trash2 className="size-3 mr-1" />
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
                     ) : (
                       <tr>
                         <td colSpan={4} className="py-10 text-center text-xs text-[#8C7A6B]">
-                          No upcoming events scheduled
+                          No pending guest approvals
                         </td>
                       </tr>
                     )}
@@ -259,7 +390,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Column: Recent Activities + Quick Links (approx 5 of 12 cols) */}
+        {/* Right Column: Recent Activities + Quick Links (5 of 12 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Recent Activities Card */}
           <div className="rounded-2xl border border-[#E8DFD1] bg-white p-5 sm:p-6 shadow-[0_2px_10px_rgba(43,30,22,0.03)]">
@@ -376,6 +507,18 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Delete Guest */}
+      <ConfirmDialog
+        open={Boolean(deletingGuest)}
+        onOpenChange={(open) => !open && setDeletingGuest(null)}
+        title="Delete Guest"
+        description={`Are you sure you want to delete ${deletingGuest?.full_name || "this guest"}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={actionLoadingId === deletingGuest?.id}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

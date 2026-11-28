@@ -1160,6 +1160,37 @@ export interface DashboardEventItem {
   status: string
 }
 
+export interface GuestRecord {
+  id: string
+  full_name: string
+  phone_number: string
+  email?: string | null
+  is_active: boolean
+  status: "PENDING" | "APPROVED" | string
+  role?: string
+  tag?: string
+  created_at: string
+  updated_at?: string
+  last_login_at?: string | null
+  group_name?: string | null
+  member_name?: string | null
+  related_group?: string | null
+  related_member?: string | null
+}
+
+export interface GuestListResult {
+  guests: GuestRecord[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface GuestApprovePayload {
+  status?: "APPROVED" | "REJECTED" | string
+  rejection_reason?: string | null
+}
+
 
 export interface MemberGrowthPoint {
   month: string

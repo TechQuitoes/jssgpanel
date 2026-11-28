@@ -24,27 +24,27 @@ export default function AuthLayout() {
         {/* Top spacer */}
         <div className="relative z-10" />
 
-        {/* Central Branded Typography Overlay (Directly matching the mockup) */}
-        <div className="relative z-10 my-auto ml-auto max-w-[420px] text-center pr-2 xl:pr-6">
+        {/* Central Branded Typography Overlay (Shifted slightly upwards with matching rich colors) */}
+        <div className="relative z-10 my-auto -translate-y-8 xl:-translate-y-12 ml-auto max-w-[420px] text-center pr-2 xl:pr-6">
           {/* Ahimsa Hand Icon */}
           <div className="flex justify-center mb-3">
             <img
               src="/hand_icon.png"
               alt="Ahimsa Hand Symbol"
-              className="h-14 w-auto object-contain drop-shadow-sm select-none"
+              className="h-16 xl:h-20 w-auto object-contain drop-shadow-sm select-none"
             />
           </div>
 
           {/* Titles */}
-          <h1 className="font-serif-display text-2xl xl:text-3xl font-bold tracking-tight text-[#2B1E16] drop-shadow-xs">
+          <h1 className="font-serif-display text-2xl xl:text-3xl font-bold tracking-tight text-[#1C0511] drop-shadow-xs">
             JSSG Jain Community
           </h1>
-          <p className="mt-1 text-sm xl:text-base font-semibold text-[#6E553F]">
+          <p className="mt-1 text-sm xl:text-base font-bold text-[#520C24]">
             Admin Panel
           </p>
 
           {/* Tagline */}
-          <div className="mt-3.5 flex items-center justify-center gap-2 text-[10px] xl:text-[11px] font-bold tracking-[0.22em] text-[#8C6D46] uppercase">
+          <div className="mt-3.5 flex items-center justify-center gap-2 text-[10px] xl:text-[11px] font-bold tracking-[0.22em] text-[#BF791F] uppercase">
             <span>UNITY</span>
             <span>•</span>
             <span>SERVICE</span>
@@ -53,44 +53,23 @@ export default function AuthLayout() {
           </div>
 
           {/* Sacred Jain Forgiveness Quote */}
-          <div className="mt-6 pt-5 border-t border-[#8C6D46]/25">
-            <p className="font-serif-display text-base xl:text-lg italic font-semibold text-[#3D2B1F]">
+          <div className="mt-6 pt-5 border-t border-[#D9CEBF]">
+            <p className="font-serif-display text-base xl:text-lg italic font-semibold text-[#1C0511]">
               “Micchāmi Dukkaḍaṃ”
             </p>
-            <p className="mt-1 text-xs xl:text-sm text-[#5C4836] font-medium">
+            <p className="mt-1 text-xs xl:text-sm text-[#36272D] font-medium">
               May all be happy. May all be free from suffering.
             </p>
-            <div className="mt-3 flex items-center justify-center gap-2 text-[#B88B4A]">
-              <span className="h-px w-8 bg-[#B88B4A]/50" />
-              <LotusIcon className="size-3.5 text-[#B88B4A]" />
-              <span className="h-px w-8 bg-[#B88B4A]/50" />
+            <div className="mt-3 flex items-center justify-center gap-2 text-[#BF791F]">
+              <span className="h-px w-8 bg-[#BF791F]/50" />
+              <LotusIcon className="size-3.5 text-[#BF791F]" />
+              <span className="h-px w-8 bg-[#BF791F]/50" />
             </div>
           </div>
         </div>
 
-        {/* Bottom subtle copyright note & compliance links */}
-        <div className="relative z-10 pt-4 border-t border-[#8C6D46]/25 space-y-2">
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-[#4A3828]/90 font-medium">
-            <Link to="/privacy-policy" className="hover:text-[#2B1E16] hover:underline">
-              Privacy Policy
-            </Link>
-            <span>•</span>
-            <Link to="/terms-and-conditions" className="hover:text-[#2B1E16] hover:underline">
-              Terms &amp; Conditions
-            </Link>
-            <span>•</span>
-            <Link to="/refund-policy" className="hover:text-[#2B1E16] hover:underline">
-              Refund Policy
-            </Link>
-            <span>•</span>
-            <Link to="/shipping-policy" className="hover:text-[#2B1E16] hover:underline">
-              Shipping Policy
-            </Link>
-            <span>•</span>
-            <Link to="/contact-us" className="hover:text-[#2B1E16] hover:underline">
-              Contact Us
-            </Link>
-          </div>
+        {/* Bottom subtle copyright note */}
+        <div className="relative z-10 pt-4 border-t border-[#8C6D46]/25">
           <div className="flex items-center justify-between text-[10px] text-[#4A3828]/80 font-medium">
             <p>© {new Date().getFullYear()} {COMPANY_CONFIG.name}</p>
             <p>Federation Portal</p>
